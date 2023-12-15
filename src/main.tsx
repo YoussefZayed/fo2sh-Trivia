@@ -3,6 +3,10 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./main.css";
+import TVPage from "./pages/tvpage";
+import PlayerPage from "./pages/playerpage";
+import { MantineProvider } from "@mantine/core";
+import { theme } from "./theme";
 
 const router = createBrowserRouter([
   {
@@ -11,11 +15,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/tv",
-    element: <div>TV</div>,
+    element: (
+      <MantineProvider theme={theme}>
+        <TVPage />
+      </MantineProvider>
+    ),
   },
   {
     path: "/play",
-    element: <div>Play</div>,
+    element: (
+      <MantineProvider theme={theme}>
+        <PlayerPage />
+      </MantineProvider>
+    ),
   },
 ]);
 

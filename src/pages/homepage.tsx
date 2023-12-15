@@ -1,4 +1,3 @@
-import React from "react";
 import { AppShell, Text, Button, useMantineTheme, Group } from "@mantine/core";
 import { Link } from "react-router-dom";
 import homepageBackground from "../imgs/homepageBackground.jpg";
