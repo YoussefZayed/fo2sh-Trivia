@@ -14,7 +14,9 @@ import Tvbackground_f02sh_pointing_right from "../imgs/10230.jpg";
 import socketIO from "socket.io-client";
 import TextToSpeech from "./tts";
 
-const socket = socketIO.connect("http://127.0.0.1:5000/");
+const socket = socketIO.connect(
+  "https://fo2sh-trivia-be-production.up.railway.app/"
+);
 
 export default function PlayerPage() {
   const [users, setUsers] = useState([]);
@@ -53,7 +55,6 @@ export default function PlayerPage() {
 
   useEffect(() => {
     let data = appData;
-    console.log(data);
     if (!data) return;
 
     let hasPresenter = false;

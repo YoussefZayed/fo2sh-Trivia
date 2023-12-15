@@ -14,7 +14,9 @@ import Tvbackground_f02sh_pointing_right from "../imgs/tvbackground_f02sh_pointi
 import socketIO from "socket.io-client";
 import TextToSpeech from "./tts";
 
-const socket = socketIO.connect("http://127.0.0.1:5000/");
+const socket = socketIO.connect(
+  "https://fo2sh-trivia-be-production.up.railway.app/"
+);
 
 export default function TVPage() {
   const [users, setUsers] = useState([]);
@@ -62,7 +64,6 @@ export default function TVPage() {
         }
       }
     }
-    console.log(data, hasPresenter);
     if (
       !hasPresenter &&
       data.question &&
@@ -86,13 +87,6 @@ export default function TVPage() {
     setShowQuestion(data.show_question);
     setBuzzed(data.buzzed_in);
     if (data.buzzed_in && buzzed) {
-      console.log(
-        buzzed.length,
-        data.buzzed_in.length,
-        shouldStart,
-        !isPaused,
-        data.buzzed_in.length > buzzed.length
-      );
       if (shouldStart && !isPaused && data.buzzed_in.length > buzzed.length) {
         setIsPaused(true);
       }
