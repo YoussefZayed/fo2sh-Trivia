@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import Tvbackground_f02sh_pointing_right from "../imgs/10230.jpg";
 import socketIO from "socket.io-client";
 import TextToSpeech from "./tts";
+import useSound from "use-sound";
+import buzz from "/short-buzzer.wav";
 
 const socket = socketIO.connect(
   "https://fo2sh-trivia-be-production.up.railway.app/"
@@ -39,6 +41,7 @@ export default function PlayerPage() {
   const [inputName, setInputName] = useState("");
   const [name, setName] = useState("");
   const [presenterCode, setPresenterCode] = useState("");
+  const [playActive] = useSound(buzz, { volume: 1 });
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -55,6 +58,7 @@ export default function PlayerPage() {
 
   useEffect(() => {
     let data = appData;
+    console.log(data);
     if (!data) return;
 
     let hasPresenter = false;
@@ -506,7 +510,10 @@ export default function PlayerPage() {
               }}
             >
               <button
-                onClick={() => socket.emit("buzz", name)}
+                onClick={() => {
+                  socket.emit("buzz", name);
+                  playActive();
+                }}
                 style={{
                   backgroundColor: "red",
                   borderRadius: "50%",

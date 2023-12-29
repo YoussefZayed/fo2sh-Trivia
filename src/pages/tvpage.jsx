@@ -13,7 +13,8 @@ import { Link } from "react-router-dom";
 import Tvbackground_f02sh_pointing_right from "../imgs/tvbackground_f02sh_pointing_right.jpg";
 import socketIO from "socket.io-client";
 import TextToSpeech from "./tts";
-
+import useSound from "use-sound";
+import buzz from "/short-buzzer.wav";
 const socket = socketIO.connect(
   "https://fo2sh-trivia-be-production.up.railway.app/"
 );
@@ -36,7 +37,8 @@ export default function TVPage() {
   const [connectedUserIds, setConnectedUserIds] = useState([]);
   const [appData, setAppData] = useState({});
   const [isPaused, setIsPaused] = useState(false);
-
+  const [playActive] = useSound(buzz, { volume: 1 });
+  const [timeForQuestion, setTimeForQuestion] = useState(10.0);
   useEffect(() => {
     socket.on("connect", () => {
       console.log("connected");
@@ -52,6 +54,7 @@ export default function TVPage() {
 
   useEffect(() => {
     let data = appData;
+    console.log(data);
     if (!data) return;
 
     let hasPresenter = false;
@@ -85,7 +88,27 @@ export default function TVPage() {
     setUsers(data.users);
     setShowAnswer(data.show_answer);
     setShowQuestion(data.show_question);
+    if (
+      data &&
+      data.buzzed_in &&
+      buzzed !== undefined &&
+      data.buzzed_in.length > buzzed.length
+    ) {
+      playActive();
+    }
+
+    if (
+      data.buzzed_in &&
+      buzzed != undefined &&
+      data.buzzed_in.length >= buzzed.length
+    ) {
+      for (let i = 0; i < buzzed.length; i++) {
+        data.buzzed_in[i].push(buzzed[i][2]);
+      }
+    }
+
     setBuzzed(data.buzzed_in);
+
     if (data.buzzed_in && buzzed) {
       if (shouldStart && !isPaused && data.buzzed_in.length > buzzed.length) {
         setIsPaused(true);
@@ -94,6 +117,30 @@ export default function TVPage() {
     setAnswers(data.answers);
     setConnectedUserIds(data.connectedUserIds);
   }, [answer, appData, question, questionSaid]);
+
+  useEffect(() => {
+    if (buzzed !== undefined && buzzed.length > 0) {
+      let timer = setTimeout(() => {
+        // loop through buzzed in users
+        let newBuzzed = [...buzzed];
+        let greatestTime = 0;
+        for (let i = 0; i < newBuzzed.length; i++) {
+          if (newBuzzed[i].length == 2) {
+            // if they haven't buzzed in yet, set their time to 0
+            newBuzzed[i].push(greatestTime + timeForQuestion);
+          }
+          if (newBuzzed[i][2] > greatestTime) {
+            greatestTime = newBuzzed[i][2];
+          }
+          if (newBuzzed[i][2] > 0.011) {
+            newBuzzed[i][2] -= 0.1;
+          }
+        }
+        setBuzzed(newBuzzed);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [buzzed]);
 
   useEffect(() => {
     if (questionSaid) {
@@ -180,7 +227,7 @@ export default function TVPage() {
     },
     userTable: {
       width: "100%",
-      fontSize: "2.25rem",
+      fontSize: "1.75rem",
       justifyContent: "center",
       alignItems: "center",
       textAlign: "center",
@@ -269,7 +316,7 @@ export default function TVPage() {
                     <div
                       dangerouslySetInnerHTML={{ __html: option }}
                       style={{
-                        fontSize: "4rem",
+                        fontSize: "2rem",
                         color: "blue",
                         fontWeight: 500,
                         margin: "1rem",
@@ -331,7 +378,7 @@ export default function TVPage() {
             type="hover"
             style={{
               ...inlineStyles.userBox,
-              maxHeight: "30vh",
+              maxHeight: "40vh",
               width: "100%",
               marginBottom: "-3rem",
             }}
@@ -394,11 +441,21 @@ export default function TVPage() {
                           <td>{user?.score}</td>
                           <td>
                             {buzzed.some((buzzer) => buzzer[0] === user.name)
-                              ? `Buzzed: ${
+                              ? `# ${
                                   buzzed.findIndex(
                                     (buzzer) => buzzer[0] === user.name
                                   ) + 1
-                                }`
+                                } Buzzed: ${(buzzed.filter(
+                                  (buzzer) =>
+                                    buzzer[0] === user.name && buzzer.length > 2
+                                )[0]
+                                  ? buzzed.filter(
+                                      (buzzer) =>
+                                        buzzer[0] === user.name &&
+                                        buzzer.length > 2
+                                    )[0][2] ?? 0
+                                  : 0
+                                ).toFixed(1)}s`
                               : "No"}
                           </td>
                           <td>
@@ -428,6 +485,45 @@ export default function TVPage() {
               </tbody>
             </Table>
           </ScrollArea>
+        </div>
+        <div
+          style={{
+            height: "3rem",
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            background: "rgba(255, 255, 255, 0.95)",
+            padding: "2rem",
+            borderRadius: "4rem 4rem 4rem 4rem",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {/* 
+            add dropdown to select time limit
+          */}
+          <Text style={{ fontSize: "1.5rem", marginRight: "1rem" }}>
+            Time Limit: {timeForQuestion} seconds
+          </Text>
+          <Button
+            onClick={() => setTimeForQuestion((prev) => prev + 5.0)}
+            style={inlineStyles.button}
+            size="md"
+          >
+            +5
+          </Button>
+
+          <Button
+            onClick={() => setTimeForQuestion((prev) => prev - 5.0)}
+            style={{
+              ...inlineStyles.button,
+              backgroundColor: "red",
+            }}
+            size="md"
+          >
+            -5
+          </Button>
         </div>
       </div>
     </AppShell>
