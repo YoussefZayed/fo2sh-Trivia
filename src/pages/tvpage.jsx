@@ -15,9 +15,7 @@ import socketIO from "socket.io-client";
 import TextToSpeech from "./tts";
 import useSound from "use-sound";
 import buzz from "/short-buzzer.wav";
-const socket = socketIO.connect(
-  "https://fo2sh-trivia-be-production.up.railway.app/"
-);
+const socket = socketIO.connect("https://triviabe.fo2sh.fun/");
 
 export default function TVPage() {
   const [users, setUsers] = useState([]);
